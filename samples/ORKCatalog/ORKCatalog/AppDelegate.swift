@@ -54,9 +54,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     // MARK: UIApplicationDelegate
-    
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey : Any]? = nil) -> Bool {
-        
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+
         // When a task result has been finished, update the result view controller's task result.
         taskListViewController.taskResultFinishedCompletionHandler = { [unowned self] taskResult in
             /*
@@ -66,11 +65,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             if let navigationController = self.resultViewController?.navigationController {
                 navigationController.popToRootViewController(animated: false)
             }
-            
+
             // Set the result so we can display it.
             self.resultViewController?.result = taskResult
         }
-        
+
         return true
     }
 }

@@ -40,7 +40,7 @@
 #import "ORKSkin.h"
 
 
-@interface ORKConsentReviewController () <UIWebViewDelegate>
+@interface ORKConsentReviewController () <WKNavigationDelegate>
 
 @end
 
@@ -58,9 +58,9 @@
         _delegate = delegate;
         
         self.toolbarItems = @[
-                             [[UIBarButtonItem alloc] initWithTitle:ORKLocalizedString(@"BUTTON_DISAGREE", nil) style:UIBarButtonItemStylePlain target:self action:@selector(cancel)],
-                             [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
-                             [[UIBarButtonItem alloc] initWithTitle:ORKLocalizedString(@"BUTTON_AGREE", nil) style:UIBarButtonItemStylePlain target:self action:@selector(ack)]];
+                              [[UIBarButtonItem alloc] initWithTitle:ORKLocalizedString(@"BUTTON_DISAGREE", nil) style:UIBarButtonItemStylePlain target:self action:@selector(cancel)],
+                              [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil],
+                              [[UIBarButtonItem alloc] initWithTitle:ORKLocalizedString(@"BUTTON_AGREE", nil) style:UIBarButtonItemStylePlain target:self action:@selector(ack)]];
     }
     return self;
 }
@@ -73,20 +73,21 @@
     
     self.view.backgroundColor = ORKColor(ORKBackgroundColorKey);
     
-    _webView = [UIWebView new];
+    WKWebViewConfiguration *webViewConfiguration = [WKWebViewConfiguration new];
+    _webView = [[WKWebView alloc] initWithFrame:CGRectZero configuration:webViewConfiguration];
     [_webView loadHTMLString:_htmlString baseURL:ORKCreateRandomBaseURL()];
     _webView.backgroundColor = ORKColor(ORKBackgroundColorKey);
     _webView.scrollView.backgroundColor = ORKColor(ORKBackgroundColorKey);
-    _webView.delegate = self;
+    _webView.navigationDelegate = self;
     [_webView setClipsToBounds:YES];
     _webView.translatesAutoresizingMaskIntoConstraints = NO;
     _toolbar.translatesAutoresizingMaskIntoConstraints = NO;
     _toolbar.translucent = YES;
-
+    
     _webView.clipsToBounds = NO;
     _webView.scrollView.clipsToBounds = NO;
     [self updateLayoutMargins];
-
+    
     [self.view addSubview:_webView];
     [self.view addSubview:_toolbar];
     
@@ -97,7 +98,7 @@
     const CGFloat margin = ORKStandardHorizontalMarginForView(self.view);
     _webView.scrollView.scrollIndicatorInsets = (UIEdgeInsets){.left = -margin, .right = -margin};
 }
-    
+
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
     [self updateLayoutMargins];
@@ -137,9 +138,9 @@
     NSDictionary *views = NSDictionaryOfVariableBindings(_webView, _toolbar);
     const CGFloat horizontalMargin = ORKStandardHorizontalMarginForView(self.view);
     [_variableConstraints addObjectsFromArray:[NSLayoutConstraint constraintsWithVisualFormat:@"H:|-horizMargin-[_webView]-horizMargin-|"
-                                                                      options:(NSLayoutFormatOptions)0
+                                                                                      options:(NSLayoutFormatOptions)0
                                                                                       metrics:@{ @"horizMargin": @(horizontalMargin) }
-                                                                        views:views]];
+                                                                                        views:views]];
     [NSLayoutConstraint activateConstraints:_variableConstraints];
 }
 
@@ -171,12 +172,14 @@
     [self presentViewController:alert animated:YES completion:nil];
 }
 
-- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType {
-    if (navigationType != UIWebViewNavigationTypeOther) {
-        [[UIApplication sharedApplication] openURL:request.URL];
-        return NO;
+- (void)webView:(WKWebView *) __unused webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
+    if (navigationAction.navigationType != WKNavigationTypeOther) {
+        [[UIApplication sharedApplication] openURL:navigationAction.request.URL options:@{} completionHandler:^(BOOL __unused success) {
+            decisionHandler(WKNavigationActionPolicyCancel);
+        }];
+    } else {
+        decisionHandler(WKNavigationActionPolicyAllow);
     }
-    return YES;
 }
 
 @end

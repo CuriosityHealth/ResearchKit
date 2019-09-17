@@ -58,7 +58,7 @@ class DashboardTableViewController: UITableViewController {
         
         // Set the table view to automatically calculate the height of cells.
         tableView.estimatedRowHeight = tableView.rowHeight
-        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.rowHeight = UITableView.automaticDimension
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -66,7 +66,7 @@ class DashboardTableViewController: UITableViewController {
         
         // Animate any visible charts
         let visibleCells = tableView.visibleCells
-        let visibleAnimatableCharts = visibleCells.flatMap { animatableChartInCell($0) }
+        let visibleAnimatableCharts = visibleCells.compactMap { animatableChartInCell($0) }
         
         for chart in visibleAnimatableCharts {
             chart.animateWithDuration(0.5)
